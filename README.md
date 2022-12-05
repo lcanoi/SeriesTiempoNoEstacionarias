@@ -4,4 +4,4 @@
 
 - SeriesDeTiempoNoEstacionarias.Rmd &rarr; Programa para correr en R
 
-- VentaTelevisores_LuisCano_A00827178.pdf &rarr; Solución
+- VentaTelevisores_LuisCano_A00827178.pdf &rarr; Análisis y Solución
