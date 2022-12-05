@@ -1,2 +1,7 @@
 # SeriesTiempoNoEstacionarias
-Solución al problema de "Venta de televisores" sobre Series de Tiempo No Estacionarias.
+
+### Reporte final de "Venta de televisores"
+
+- SeriesDeTiempoNoEstacionarias.Rmd &rarr; Programa para correr en R
+
+- VentaTelevisores_LuisCano_A00827178.pdf &rarr; Solución
