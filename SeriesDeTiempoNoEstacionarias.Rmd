@@ -1,0 +1,126 @@
+---
+title: "Reporte final de \"Venta de televisores\""
+author: "Luis Cano Irigoyen A00827178"
+date: "2022-12-02"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Datos de las ventas de televisores
+
+| Año | 1  |   |   |   | 2 |   |   |   | 3  |   |   |   | 4  |   |   |   |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Trimestre | 1 | 2 | 3 | 4 | 1 | 2 | 3 | 4 | 1 | 2 | 3 | 4 | 1 | 2 | 3 | 4 |
+| Ventas (miles) | 4.8 | 4.1 | 6.0 | 6.5 | 5.8 | 5.2 | 6.8 | 7.4 | 6.0 | 5.6 | 7.5 | 7.8 | 6.3 | 5.9 | 8.0 | 8.4 |
+
+## Realiza el gráfico de dispersión. Observa la tendencia y los ciclos.
+```{r}
+Ventas = c(4.8,4.1,6.0,6.5,5.8,5.2,6.8,7.4,6.0,5.6,7.5,7.8,6.3,5.9,8.0,8.4)
+```
+
+```{r}
+X = ts(Ventas, frequency = 4, start(c(2016,1)))
+plot(X, type = "o", col = "blue", pch = 20, cex = 1.5, lwd = 1.5, xlab = "Año", ylab = "Ventas (miles)")
+abline(v = c(2,3,4), col = "lightblue", lty = 2)   
+```
+
+## Realiza el análisis de tendencia y estacionalidad
+
+```{r}
+tendencia = lm(X ~ time(X))
+plot(X, col = "blue", cex = 1.5, lwd = 1.5, xlab = "Año", ylab = "Ventas (miles)")
+abline(tendencia, col = "red", lwd = 2)
+```
+
+#### Descompón la serie en sus 3 componentes e interprétalos
+```{r}
+T = decompose(X, type="m")
+plot(T, col="red")
+```
+
+## Analiza el modelo lineal de la tendencia:
+
+#### Realiza la regresión lineal de la tendencia (ventas desestacionalizadas vs tiempo)
+```{r}
+Ventas_desestacion = (T$x)/(T$seasonal)
+x1 = 1:16
+y1 = Ventas_desestacion
+N1 = lm(y1~x1)
+N1
+```
+
+#### Dibuja la recta junto con las ventas desestacionalizadas.
+
+```{r}
+plot(x1, y1, type = "o", col = "blue", pch = 20, cex = 1.5, lwd = 1.5, xlab = "Trimestre", ylab = "Ventas (miles)")
+abline(N1, col = "red", lwd = 2)
+text(6,7,"Ventas = 0.1474 Trimestre - 5.1080")
+```
+
+Analiza la pertinencia del modelo lineal:
+Significancia de β1
+```{r}
+summary(N1)
+```
+Determinamos que β1 es significativo ya que su p-value es menor a 0.05 (p-value: 4.248e-09).
+
+Variabilidad explicada por el modelo (c.d)
+```{r}
+cat(summary(N1)$r.squared*100,"%")
+```
+
+Análisis de los residuos
+```{r}
+plot(N1$residuals)
+```
+Los residuos parecen ser aleatorios, no hay un patrón.
+
+Prueba de normalidad
+```{r}
+shapiro.test(N1$residuals)
+```
+Como el p-value es mayor a 0.05, no podemos rechazar que los residuos sigan una distribución normal.
+
+## Calcula el CME y el EPAM (promedio de los errores porcentuales) de la predicción de la serie de tiempo.
+```{r}
+E = NA
+E_porcentual = NA
+for(i in 1:16){
+    E[i] = Ventas[i] - as.vector(Ventas_desestacion)[i]
+    E_porcentual[i] = abs(E[i])/Ventas[i]
+}
+CME = mean(E^2,na.rm=TRUE)
+EPAM = sum(E_porcentual)/16
+cat("CME", CME, "\n")
+cat("EPAM", EPAM)
+```
+Un error de 0.6172 miles de pesos y un error porcentual de 11.95%. 
+
+## Realiza el pronóstico para el siguiente año.
+
+```{r}
+pred1 = predict(N1, data.frame(x1 = 17))
+pred2 = predict(N1, data.frame(x1 = 18))
+pred3 = predict(N1, data.frame(x1 = 19))
+pred4 = predict(N1, data.frame(x1 = 20))
+# índices estacionales
+pred1 = pred1 * T$seasonal[1]
+pred2 = pred2 * T$seasonal[2]
+pred3 = pred3 * T$seasonal[3]
+pred4 = pred4 * T$seasonal[4]  
+# pronóstico
+cat ("Pronóstico para el siguiente año: ", pred1, pred2, pred3, pred4)
+```
+
+```{r}
+Ventas_pro = c(4.8,4.1,6.0,6.5,5.8,5.2,6.8,7.4,6.0,5.6,7.5,7.8,6.3,5.9,8.0,8.4,7.1,6.5,8.6,9.2)
+X = ts(Ventas_pro, frequency = 4, start(c(2016,1)))
+plot(X, type = "o", col = "blue", pch = 20, cex = 1.5, lwd = 1.5, xlab = "Año", ylab = "Ventas (miles)", main = "Ventas con pronóstico")
+abline(v = c(2,3,4), col = "lightblue", lty = 2)  
+abline(v = c(5), col = "red", lty = 2)  
+
+```
+
